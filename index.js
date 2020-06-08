@@ -49,15 +49,17 @@ const Matches = sequelize.define('matches', {
 async function checkName (nameP) {
 	const nameC = await Scores.findOne({ where: { name: nameP } });
 	if (nameC) {
-		return 1;
+		console.log(nameC);
+		return true;
 	}
-	return 0;
+	console.log("Didnt Find Name");
+	return false;
 }
 
 client.once('ready', () => {
 	console.log('Ready!');
-	Scores.sync();
-	Matches.sync();
+	Scores.sync({ force: true });
+	Matches.sync({ force: true });
 });
 
 client.on('message' , async message => {
@@ -68,7 +70,6 @@ client.on('message' , async message => {
 	
 	const args = message.content.slice(PREFIX.length).split(' ');
 	const command = args.shift().toLowerCase();
-
 	if (command === 'help') { //Outputs a message about how to use the bot
 		message.channel.send("Here is a list of commands:\n!register playerName - registers a player into the bot, must be unique, and 1 word for ease of use\n!leaderbord - Displays each players wins and losses\n!playername history - Displays that players match history\n!record WhitePlayerName BlackPlayerName Outcome(Winner PlayerName or Draw) - Records a match, can only be used by a chess admin\n!delete PlayerName MatchNumber - Deletes a match from a players match history, can only be used by a chess admin");
 	}
@@ -79,6 +80,8 @@ client.on('message' , async message => {
 			const input = await Scores.create({
 				name: newName,
 			});
+
+			//const nameAdded = await Scores.findOne({ where: { name: newName } });
 			return message.reply(`Player ${input.name} added.`);
 		} catch (e) {
 			if (e.name === 'SequelizeUniqueConstraintError') {
@@ -93,10 +96,10 @@ client.on('message' , async message => {
 		const whiteP = args.shift();
 		const blackP = args.shift();
 		const outcome = args.shift().toLowerCase();
-		const asdf = checkName(whiteP);
-		console.log(asdf);
+		//const test  = checkName(whiteP);
+		//console.log(test);
 
-		if(checkName(whiteP) === 0 || checkName(blackP) === 0) {
+		if(!checkName(whiteP) || !checkName(blackP)) {
 			return message.reply('One of the players entered is not in the database');
 		}
 
@@ -104,9 +107,10 @@ client.on('message' , async message => {
 
 
 		//});
-		message.reply('Worked this far');
+		console.log("Both Names are in the database");
+
 
 	}
 });
 
-client.login('Token Here');
+client.login('NzE4OTk5OTUyNDgyODkzODU0.Xt55Cw.Xczf7VukLs3RAHdecYvTb8gpzmE');
