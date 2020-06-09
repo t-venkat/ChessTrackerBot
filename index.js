@@ -49,10 +49,9 @@ const Matches = sequelize.define('matches', {
 async function checkName (nameP) {
 	const nameC = await Scores.findOne({ where: { name: nameP } });
 	if (nameC) {
-		console.log(nameC);
+		console.log("Name is in");
 		return true;
 	}
-	console.log("Didnt Find Name");
 	return false;
 }
 
@@ -99,18 +98,42 @@ client.on('message' , async message => {
 		//const test  = checkName(whiteP);
 		//console.log(test);
 
-		if(!checkName(whiteP) || !checkName(blackP)) {
-			return message.reply('One of the players entered is not in the database');
+		if (!(await checkName(whiteP)) || !(await checkName(blackP))) { //To see if the name is in the database
+			return message.reply('At least one of the players entered is not in the database');
 		}
 
-		//const matchInput = await Matches.create({
+		if (whiteP === blackP) { //To see whether the names are different
+			return message.reply('You played yourself smh');
+		}
 
+		console.log(whiteP);
+		console.log(blackP);
+		console.log(outcome);
 
-		//});
-		console.log("Both Names are in the database");
+		if (whiteP.toLowerCase() != outcome && blackP.toLowerCase() != outcome && outcome != "draw") { //To ensure outome is correct
+			return message.reply('Outcome field is invalid');
+		}
 
+		const currentDate = Date.now();
 
+		try {
+			const input = await Matches.create({
+				white: whiteP,
+				black: blackP,
+				date: currentDate,
+				outcome: outcome,
+			});
+			return message.reply('Match has been added');
+
+		} catch (e) {
+			return message.reply('Something went wrong when trying to record this match');
+		}
 	}
+
+	if (command === 'leaderbord') {
+		const 
+	}
+
 });
 
-client.login('NzE4OTk5OTUyNDgyODkzODU0.Xt55Cw.Xczf7VukLs3RAHdecYvTb8gpzmE');
+client.login('Enter Token Here');
