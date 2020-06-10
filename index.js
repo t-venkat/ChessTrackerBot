@@ -113,6 +113,12 @@ client.on('message' , async message => {
 			return message.reply('Outcome field is invalid');
 		}
 
+		
+		if (matchLink == null) {
+			return message.reply('ERROR must enter something for fourth feild, if not, then enter NONE');
+		}
+
+
 		if (matchLink.indexOf("lichess") == -1 && (matchLink.toLowerCase() != "none")) {
 			return message.reply('ERROR, Must send a link from lichess to store, if not, enter NONE in the field');
 		}
@@ -139,18 +145,23 @@ client.on('message' , async message => {
 		if (!(await checkName(playerName))) {
 			return message.reply(`ERROR ${playerName} is not in the database`);
 		}
-
+		try {
 		const matchList = await Matches.findAll({ where: {
 			[Op.or]: [
-			white: playerName,
-			black: playerName, 
-			] }
+			{white: playerName },
+			{ black: playerName }
+			] },
 			order: [['date', 'ASC']],
 			attributes: [],
 		 }); 
-		
+
+		console.log(matchList);
+		}
+		catch (e) {
+			return message.reply('Something went wrong when trying to get this players match histroy');
+		}
 	}
 
 });
 
-client.login('Place Token Here');
+client.login('NzE4OTk5OTUyNDgyODkzODU0.XuFfwQ.diz9Ma4lChGMay0z9OLZNBZR8zM');
