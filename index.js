@@ -44,12 +44,14 @@ const Matches = sequelize.define('matches', {
 	outcome: {
 		type: Sequelize.STRING,
 	},
+	match: {
+		type: Sequelize.STRING,
+	}
 });
 
 async function checkName (nameP) {
 	const nameC = await Scores.findOne({ where: { name: nameP } });
 	if (nameC) {
-		console.log("Name is in");
 		return true;
 	}
 	return false;
@@ -70,7 +72,7 @@ client.on('message' , async message => {
 	const args = message.content.slice(PREFIX.length).split(' ');
 	const command = args.shift().toLowerCase();
 	if (command === 'help') { //Outputs a message about how to use the bot
-		message.channel.send("Here is a list of commands:\n!register playerName - registers a player into the bot, must be unique, and 1 word for ease of use\n!leaderbord - Displays each players wins and losses\n!playername history - Displays that players match history\n!record WhitePlayerName BlackPlayerName Outcome(Winner PlayerName or Draw) - Records a match, can only be used by a chess admin\n!delete PlayerName MatchNumber - Deletes a match from a players match history, can only be used by a chess admin");
+		message.channel.send("Here is a list of commands:\n!register playerName - registers a player into the bot, must be unique, and 1 word for ease of use\n!leaderbord - Displays each players wins and losses\n!history playerName - Displays that players match history\n!record WhitePlayerName BlackPlayerName Outcome(Winner PlayerName or Draw) - Records a match, can only be used by a chess admin\n!delete PlayerName MatchNumber - Deletes a match from a players match history, can only be used by a chess admin");
 	}
 	if (command === 'register') {
 
@@ -95,10 +97,11 @@ client.on('message' , async message => {
 		const whiteP = args.shift();
 		const blackP = args.shift();
 		const outcome = args.shift().toLowerCase();
+		const matchLink = args.shift();
 		//const test  = checkName(whiteP);
 		//console.log(test);
 
-		if (!(await checkName(whiteP)) || !(await checkName(blackP))) { //To see if the name is in the database
+		if (!(await checkName(whiteP)) || !(await checkName(blackP))) { //To see if the name is in the database 
 			return message.reply('At least one of the players entered is not in the database');
 		}
 
@@ -106,12 +109,12 @@ client.on('message' , async message => {
 			return message.reply('You played yourself smh');
 		}
 
-		console.log(whiteP);
-		console.log(blackP);
-		console.log(outcome);
-
 		if (whiteP.toLowerCase() != outcome && blackP.toLowerCase() != outcome && outcome != "draw") { //To ensure outome is correct
 			return message.reply('Outcome field is invalid');
+		}
+
+		if (matchLink.indexOf("lichess") == -1 && (matchLink.toLowerCase() != "none")) {
+			return message.reply('ERROR, Must send a link from lichess to store, if not, enter NONE in the field');
 		}
 
 		const currentDate = Date.now();
@@ -122,6 +125,7 @@ client.on('message' , async message => {
 				black: blackP,
 				date: currentDate,
 				outcome: outcome,
+				match: matchLink,
 			});
 			return message.reply('Match has been added');
 
@@ -130,10 +134,23 @@ client.on('message' , async message => {
 		}
 	}
 
-	if (command === 'leaderbord') {
-		const 
+	if (command === 'history') {
+		const playerName = args.shift();
+		if (!(await checkName(playerName))) {
+			return message.reply(`ERROR ${playerName} is not in the database`);
+		}
+
+		const matchList = await Matches.findAll({ where: {
+			[Op.or]: [
+			white: playerName,
+			black: playerName, 
+			] }
+			order: [['date', 'ASC']],
+			attributes: [],
+		 }); 
+		
 	}
 
 });
 
-client.login('Enter Token Here');
+client.login('Place Token Here');
