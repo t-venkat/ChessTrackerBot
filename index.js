@@ -3,6 +3,7 @@ const Sequelize = require('sequelize');
 
 const client = new Discord.Client();
 const PREFIX = '!';
+const { Op } = require("sequelize");
 
 //connection information to the sqlite database
 const sequelize = new Sequelize('database', 'user', 'password', {
@@ -55,6 +56,22 @@ async function checkName (nameP) {
 		return true;
 	}
 	return false;
+}
+
+async function updateWinLoss (winner, loser) {
+	const wEntry = await Scores.findOne({ where: {name: winner} });
+	wEntry.increment('wins');
+
+	const lEntry = await Scores.findOne({ where: {name: loser} });
+	lEntry.increment('losses');
+}
+
+async function updateDraw (player1, player2) {
+	const p1Entry = await Scores.findOne({ where: {name: player1} });
+	wEntry.increment('draws');
+
+	const p2Entry = await Scores.findOne({ where: {name: player2} });
+	p2Entry.increment('draws');
 }
 
 client.once('ready', () => {
@@ -133,6 +150,21 @@ client.on('message' , async message => {
 				outcome: outcome,
 				match: matchLink,
 			});
+
+			if (outcome === whiteP.toLowerCase()) {
+				await updateWinLoss(whiteP, blackP);
+			}
+
+			if (outcome === blackP.toLowerCase()) {
+				await updateWinLoss(blackP, whiteP);
+				const added = await Scores.findOne({ where: { name: blackP } });
+				console.log(added);
+			}
+
+			if (outcome === "draw") {
+				await updateDraw(whiteP, blackP);
+			}
+			
 			return message.reply('Match has been added');
 
 		} catch (e) {
@@ -140,28 +172,34 @@ client.on('message' , async message => {
 		}
 	}
 
-	if (command === 'history') {
+
+
+	if (command === 'history') { //Not working
 		const playerName = args.shift();
 		if (!(await checkName(playerName))) {
 			return message.reply(`ERROR ${playerName} is not in the database`);
 		}
 		try {
-		const matchList = await Matches.findAll({ where: {
-			[Op.or]: [
-			{white: playerName },
-			{ black: playerName }
-			] },
-			order: [['date', 'ASC']],
-			attributes: [],
+		const matchList = await Matches.findAll({
+		 where: {
+			[Op.or]: 
+				[
+				{ white: playerName },
+				{ black: playerName }
+				] 
+			},
+			//order: [['date', 'ASC']],
+			attributes: []
 		 }); 
 
 		console.log(matchList);
 		}
 		catch (e) {
+			console.log(e);
 			return message.reply('Something went wrong when trying to get this players match histroy');
 		}
 	}
 
 });
 
-client.login('NzE4OTk5OTUyNDgyODkzODU0.XuFfwQ.diz9Ma4lChGMay0z9OLZNBZR8zM');
+client.login('NzE4OTk5OTUyNDgyODkzODU0.XuGItw.o_LQtL50xceIwug1Dh6bwQYYBrA');
