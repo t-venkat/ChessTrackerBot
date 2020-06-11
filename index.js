@@ -172,6 +172,19 @@ client.on('message' , async message => {
 		}
 	}
 
+	if (command === 'leaderbord') {
+		try{
+			const players = await Scores.findAll({});
+			players.join('\n');
+			message.channel.send(`${players}`);
+		} catch (e) {
+			console.log(e);
+			return message.reply("Error when printing out leaderbord")
+		}
+		
+
+	}
+
 
 
 	if (command === 'history') { //Not working
@@ -202,4 +215,4 @@ client.on('message' , async message => {
 
 });
 
-client.login('NzE4OTk5OTUyNDgyODkzODU0.XuGItw.o_LQtL50xceIwug1Dh6bwQYYBrA');
+client.login('Add Token Here');
