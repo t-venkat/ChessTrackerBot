@@ -113,7 +113,7 @@ client.on('message' , async message => {
 	if (command === 'record') {
 		const whiteP = args.shift();
 		const blackP = args.shift();
-		const outcome = args.shift().toLowerCase();
+		const outcome = args.shift();
 		const matchLink = args.shift();
 		//const test  = checkName(whiteP);
 		//console.log(test);
@@ -126,7 +126,7 @@ client.on('message' , async message => {
 			return message.reply('You played yourself smh');
 		}
 
-		if (whiteP.toLowerCase() != outcome && blackP.toLowerCase() != outcome && outcome != "draw") { //To ensure outome is correct
+		if (whiteP.toLowerCase() != outcome.toLowerCase() && blackP.toLowerCase() != outcome.toLowerCase() && outcome.toLowerCase() != "draw") { //To ensure outome is correct
 			return message.reply('Outcome field is invalid');
 		}
 
@@ -174,9 +174,23 @@ client.on('message' , async message => {
 
 	if (command === 'leaderbord') {
 		try{
-			const players = await Scores.findAll({});
-			players.join('\n');
-			message.channel.send(`${players}`);
+			var finalString = "Name\t   Wins\t   Losses\t   Draws\n";
+			const players = await Scores.findAll({
+				order: [['wins', 'DESC']]
+			});
+			var x = 0;
+			while (x < players.length) {
+				const name = players[x].name;
+				const wins = players[x].wins;
+				const losses = players[x].losses;
+				const draws = players[x].draws;
+				finalString = finalString + name + '\t\t' + wins + '\t\t' + losses + '\t\t' + draws
+				if (x != players.length-1) {
+					finalString = finalString + '\n';
+				}
+				x++;
+			}
+			message.channel.send(finalString);
 		} catch (e) {
 			console.log(e);
 			return message.reply("Error when printing out leaderbord")
@@ -201,18 +215,31 @@ client.on('message' , async message => {
 				{ black: playerName }
 				] 
 			},
-			//order: [['date', 'ASC']],
-			attributes: []
+			order: [['date', 'ASC']]
 		 }); 
-
-		console.log(matchList);
+		var finalString = `${playerName} Match History\nDate\tWhite\tBlack\tOutcome\tLink to Game\n`;
+		var x = 0;
+			while (x < matchList.length) {
+				const date = matchList[x].date;
+				const white = matchList[x].white;
+				const black = matchList[x].black;
+				const outcome = matchList[x].outcome;
+				const gameLink = matchList[x].match;
+				finalString = finalString + date + '\t\t' + white + '\t\t' + black + '\t\t' + outcome + '\t\t' + gameLink;
+				if (x != matchList.length-1) {
+					finalString = finalString + '\n';
+				}
+				x++;
+			}
+			message.channel.send(finalString);
+		
 		}
 		catch (e) {
 			console.log(e);
-			return message.reply('Something went wrong when trying to get this players match histroy');
+			return message.reply('Something went wrong when trying to get this players match history');
 		}
 	}
 
 });
 
-client.login('Add Token Here');
+client.login('NzE4OTk5OTUyNDgyODkzODU0.XuLDZA.zV22AlQvpyDXbHRmHDhS47tw8n8');
